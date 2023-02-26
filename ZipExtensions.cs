@@ -19,10 +19,7 @@ namespace AwsUpload
 
         public static IEnumerable<(long PONumber, string FileName)> POToFileMap(this ZipArchiveEntry entry)
         {
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
-            {
-                Delimiter = "~",
-            };
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture){ Delimiter = "~" };
 
             using (var reader = new StreamReader(entry.Open()))
             using (var csv = new CsvReader(reader, config))
@@ -33,7 +30,13 @@ namespace AwsUpload
                 {
                     foreach (var y in csv.GetField<string>("Attachment List").Split(',').Select(x => x.Split("/").Last()))
                     {
-                        yield return (csv.GetField<long>("PO Number"), y);
+                        if (csv.TryGetField("PO Number", out long po))
+                        {
+                            if (!string.IsNullOrEmpty(y) && po != 0)
+                            {
+                                yield return (po, y);
+                            }
+                        }
                     }
                 }
             }

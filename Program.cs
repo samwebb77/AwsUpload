@@ -17,14 +17,21 @@ namespace AwsUpload
                 if (!file.Metadata.IsProcessed())
                 {
                     using var download = await client.Download(file);
-                    
-                    using (ZipArchive archive = ZipFile.OpenRead(download.FilePath))
+
+                    using ZipArchive archive = ZipFile.OpenRead(download.FilePath);
 
                     foreach ((long PO, string FileName) in archive.CSVs().SelectMany(csv => csv.POToFileMap()))
                     {
-                        var entry = archive.PDFs().First(x => x.Name == FileName);
+                        var entry = archive.PDFs().FirstOrDefault(x => x.Name == FileName);
 
-                        await client.Upload(entry, PO, download);
+                        if (entry != null)
+                        {
+                            await client.Upload(entry, PO, download);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Failed to find file {FileName} for PO {PO}");
+                        }
                     }
 
                     await client.MarkProcessed(download);

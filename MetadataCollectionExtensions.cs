@@ -7,7 +7,7 @@ namespace AwsUpload
         private const string ProcessedMetaDataKey = "SamCodeProcessedOn";
         private const string OriginZipFileMetaDataKey = "OrginZipFile";
 
-        public static bool IsProcessed(this MetadataCollection metadataCollection) => metadataCollection.Keys.Contains(ProcessedMetaDataKey);
+        public static bool IsProcessed(this MetadataCollection metadataCollection) => metadataCollection.Keys.Contains($"x-amz-meta-{ProcessedMetaDataKey}");
         public static void SetProcessedTime(this MetadataCollection metadataCollection)
         {
             metadataCollection.Add(ProcessedMetaDataKey, DateTimeOffset.UtcNow.ToString());

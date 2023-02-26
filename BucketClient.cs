@@ -85,7 +85,8 @@ namespace AwsUpload
                 SourceBucket = BucketName,
                 SourceKey = file.Key,
                 DestinationBucket = BucketName,
-                DestinationKey = file.Key
+                DestinationKey = file.Key,
+                MetadataDirective = S3MetadataDirective.REPLACE
             };
 
             foreach (var key in file.Metadata.Keys)
