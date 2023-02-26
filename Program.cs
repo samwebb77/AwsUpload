@@ -1,5 +1,4 @@
-﻿
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using System.IO.Compression;
 
 namespace AwsUpload
@@ -12,13 +11,13 @@ namespace AwsUpload
 
             var client = new BucketClient(config["AccessKey"], config["SecretKey"]);
 
-            await foreach (var file in client.GetFilesWhere(s => s.Key.EndsWith(".zip")))
+            await foreach (StatFile file in client.GetFilesWhere(s => s.Key.EndsWith(".zip")))
             {
                 if (!file.Metadata.IsProcessed())
-                {
-                    using var download = await client.Download(file);
+                {                   
+                    using var stream = await client.Stream(file);
 
-                    using ZipArchive archive = ZipFile.OpenRead(download.FilePath);
+                    using ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read);
 
                     foreach ((long PO, string FileName) in archive.CSVs().SelectMany(csv => csv.POToFileMap()))
                     {
@@ -26,7 +25,7 @@ namespace AwsUpload
 
                         if (entry != null)
                         {
-                            await client.Upload(entry, PO, download);
+                            await client.Upload(entry, PO, file);
                         }
                         else
                         {
@@ -34,7 +33,7 @@ namespace AwsUpload
                         }
                     }
 
-                    await client.MarkProcessed(download);
+                    await client.MarkProcessed(file);
                 }
             }
         }

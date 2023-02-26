@@ -56,7 +56,22 @@ namespace AwsUpload
             return new DownloadedStatFile(file.S3Object, fileName, file.Metadata);
         }
 
-        public async Task Upload(ZipArchiveEntry entry, long PO, DownloadedStatFile file)
+
+        public async Task<Stream> Stream(StatFile file)
+        {            
+            GetObjectRequest getObjRequest = new GetObjectRequest()
+            {
+                BucketName = BucketName,
+                Key = file.Key,
+            };
+
+            GetObjectResponse getObjRespone = await S3Client.GetObjectAsync(getObjRequest);
+
+            return getObjRespone.ResponseStream;
+          
+        }
+
+        public async Task Upload(ZipArchiveEntry entry, long PO, StatFile file)
         {
             using TransferUtility fileTransferUtility = new(S3Client);
 
@@ -78,7 +93,7 @@ namespace AwsUpload
             await fileTransferUtility.UploadAsync(request);
         }
 
-        public async Task MarkProcessed(DownloadedStatFile file)
+        public async Task MarkProcessed(StatFile file)
         {
             CopyObjectRequest request = new CopyObjectRequest()
             {

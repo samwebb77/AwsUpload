@@ -13,7 +13,7 @@ namespace AwsUpload
             metadataCollection.Add(ProcessedMetaDataKey, DateTimeOffset.UtcNow.ToString());
         }
 
-        public static void SetOriginalZipFile(this MetadataCollection metadataCollection, DownloadedStatFile file)
+        public static void SetOriginalZipFile(this MetadataCollection metadataCollection, StatFile file)
         {
             metadataCollection.Add(OriginZipFileMetaDataKey, file.Key);
         }
