@@ -3,6 +3,7 @@ using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
+using System.Diagnostics;
 using System.IO.Compression;
 
 namespace AwsUpload
@@ -67,8 +68,7 @@ namespace AwsUpload
 
             GetObjectResponse getObjRespone = await S3Client.GetObjectAsync(getObjRequest);
 
-            return getObjRespone.ResponseStream;
-          
+            return getObjRespone.ResponseStream;          
         }
 
         public async Task Upload(ZipArchiveEntry entry, long PO, StatFile file)
@@ -91,6 +91,8 @@ namespace AwsUpload
             request.Metadata.SetOriginalZipFile(file);
 
             await fileTransferUtility.UploadAsync(request);
+
+            Debug.WriteLine($"Uploaded {PO}/{entry.Name} from {file.Key}");
         }
 
         public async Task MarkProcessed(StatFile file)
@@ -112,6 +114,10 @@ namespace AwsUpload
             request.Metadata.SetProcessedTime();
 
             await S3Client.CopyObjectAsync(request);
+
+            Debug.WriteLine($"---------------------------");
+            Debug.WriteLine($"Marked {file.Key} Processed");
+            Debug.WriteLine($"---------------------------");
         }
     }
 }

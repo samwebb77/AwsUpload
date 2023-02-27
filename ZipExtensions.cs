@@ -19,27 +19,28 @@ namespace AwsUpload
 
         public static IEnumerable<(long PONumber, string FileName)> POToFileMap(this ZipArchiveEntry entry)
         {
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture){ Delimiter = "~" };
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture) { Delimiter = "~" };
 
-            using (var reader = new StreamReader(entry.Open()))
-            using (var csv = new CsvReader(reader, config))
+            using var reader = new StreamReader(entry.Open());
+            using var csv = new CsvReader(reader, config);
+
+            csv.Read();
+            csv.ReadHeader();
+            while (csv.Read())
             {
-                csv.Read();
-                csv.ReadHeader();
-                while (csv.Read())
+                foreach (string fileName in csv.GetField<string>("Attachment List")?.Split(',').Select(x => x.Split("/").Last()))
                 {
-                    foreach (var y in csv.GetField<string>("Attachment List").Split(',').Select(x => x.Split("/").Last()))
+                    if (csv.TryGetField("PO Number", out long po) && !string.IsNullOrEmpty(fileName) && po != 0)
                     {
-                        if (csv.TryGetField("PO Number", out long po))
-                        {
-                            if (!string.IsNullOrEmpty(y) && po != 0)
-                            {
-                                yield return (po, y);
-                            }
-                        }
+                        yield return (po, fileName);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Failed to parse row ID {csv.GetField<string>("Id")} of {entry.FullName}");
                     }
                 }
             }
+
         }
     }
 }
