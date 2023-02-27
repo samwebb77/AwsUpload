@@ -13,7 +13,7 @@ namespace AwsUpload
 
             var client = new BucketClient(config["AccessKey"], config["SecretKey"]);
 
-            await foreach (StatFile file in client.GetFilesWhere(s => s.Key.EndsWith("1-17_04-30-07.zip")))
+            await foreach (StatFile file in client.GetFilesWhere(s => s.Key.EndsWith(".zip")))
             {
                 if (!file.Metadata.IsProcessed())
                 {                   
